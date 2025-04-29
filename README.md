@@ -31,12 +31,29 @@ For the project, YOLOv11 (object detection) and YOLOv11-seg (semantic segmentati
    cd Warehouse_pallet_detection_Segmentation
    ```
 
-2. Install the required dependencies:
+2. Download the trained models:
+   
+   Due to size limitations on GitHub, the trained models are hosted on Google Drive. Download them from:
+   [https://drive.google.com/drive/folders/1Bp9AkuBKCHDWW3z7k4iamuitBH6I3whi](https://drive.google.com/drive/folders/1Bp9AkuBKCHDWW3z7k4iamuitBH6I3whi?usp=sharing)
+
+   After downloading:
+   ```bash
+   # Extract the downloaded zip file (if zipped)
+   unzip trained_models.zip  # Adjust filename if different
+   
+   # Make sure the extracted folder is named 'trained_models' and place it in the project root
+   # The structure should look like:
+   # ├── trained_models/
+   # │   ├── optimized/       # Contains ONNX optimized models
+   # │   └── unoptimized/     # Contains original PyTorch models
+   ```
+
+3. Install the required dependencies:
    ```bash
    pip3 install -r requirements.txt
    ```
 
-3. Source your ROS2 installation:
+4. Source your ROS2 installation:
    ```bash
    source /opt/ros/humble/setup.bash  # Adjust based on your ROS2 version
    ```
@@ -142,9 +159,12 @@ Then from the dropdown menu at the top, select either:
 
 ## Docker Usage
 
+Before building the Docker image, make sure you've downloaded the trained models from Google Drive as described in the setup instructions.
+
 Build the Docker image:
 
 ```bash
+# Make sure the 'trained_models' directory is in the same location as the Dockerfile
 docker build -t pallet_detection .
 ```
 
@@ -168,11 +188,40 @@ docker run --rm --gpus all pallet_detection python3 /app/pallet_inference_node.p
 docker run --rm --gpus all pallet_detection python3 /app/pallet_inference_node.py --ros-args -p use_onnx:=true
 ```
 
+## Troubleshooting 
+
+If you encounter issues with the trained models:
+
+1. Verify that the `trained_models` directory structure is correct:
+   ```
+   trained_models/
+   ├── optimized/
+   │   ├── best_detect_fp16.onnx
+   │   └── best_segment_fp16.onnx
+   │   └── ... (other optimized models)
+   └── unoptimized/
+       ├── detect/
+       │   └── best.pt
+       └── segment/
+           └── best.pt
+   ```
+
+2. If the model files have different names than those referenced in code:
+   - Update the paths in the command line arguments when running the node:
+     ```bash
+     python3 pallet_inference_node.py --ros-args -p detection_model_path:=trained_models/unoptimized/detect/YOUR_MODEL_FILENAME.pt
+     ```
+   - Or rename your files to match the expected naming convention.
+
+3. For ONNX model problems:
+   - You can regenerate optimized ONNX models using the `onnx_transform.py` script if needed.
+   - Make sure you have the correct ONNX dependencies installed.
+
 ## Training Results
 
 ### Object Detection Training
 
-The object detection model was trained using YOLOv8 to detect pallets in warehouse environments. Below are the training results:
+The object detection model was trained using YOLOv11 to detect pallets in warehouse environments. Below are the training results:
 
 <img src="res_images/detect_results.png" width="600" alt="Detection Training Results">
 
