@@ -1,9 +1,5 @@
 FROM ros:humble-perception
 
-# Use NVIDIA runtime
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV NVIDIA_DRIVER_CAPABILITIES=all
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
@@ -17,17 +13,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Fix NumPy version to avoid compatibility issues with ROS/CV Bridge
-# Must be installed before other packages that might pull in newer numpy
 RUN pip3 install --no-cache-dir 'numpy==1.24.3'
 
-# Install PyTorch with CUDA support
-RUN pip3 install --no-cache-dir torch==2.0.1+cu118 torchvision==0.15.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+# Install PyTorch (CPU version)
+RUN pip3 install --no-cache-dir torch==2.0.1+cpu torchvision==0.15.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Install Ultralytics YOLO
 RUN pip3 install --no-cache-dir ultralytics>=8.0.0
 
-# Install ONNX runtime with GPU support
-RUN pip3 install --no-cache-dir onnx>=1.14.0 onnxruntime-gpu>=1.16.0 onnx-simplifier>=0.4.35
+# Install ONNX runtime (CPU version)
+RUN pip3 install --no-cache-dir onnx>=1.14.0 onnxruntime>=1.16.0 onnx-simplifier>=0.4.35
 
 # Install ROS2 Python dependencies
 RUN pip3 install --no-cache-dir opencv-python>=4.7.0 pyyaml>=6.0 matplotlib>=3.7.0 pillow>=9.4.0 tqdm>=4.65.0

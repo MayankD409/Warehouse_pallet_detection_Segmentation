@@ -164,15 +164,17 @@ Before building the Docker image, make sure you've downloaded the trained models
 Build the Docker image:
 
 ```bash
-# Make sure the 'trained_models' directory is in the same location as the Dockerfile
-docker build -t pallet_detection .
+# Build the CPU-only version
+docker build -t pallet_detection:cpu .
 ```
 
 Run the container:
 
 ```bash
-docker run --rm -it --gpus all pallet_detection
+docker run --rm -it pallet_detection:cpu
 ```
+
+### Model Selection
 
 When the container starts, you'll be prompted to choose which model type to run:
 1. Unoptimized PyTorch models (default)
@@ -182,11 +184,13 @@ To run with a specific model type without the interactive prompt, you can overri
 
 ```bash
 # To run with unoptimized PyTorch models
-docker run --rm --gpus all pallet_detection python3 /app/pallet_inference_node.py
+docker run --rm pallet_detection:cpu python3 /app/pallet_inference_node.py
 
 # To run with optimized ONNX models
-docker run --rm --gpus all pallet_detection python3 /app/pallet_inference_node.py --ros-args -p use_onnx:=true
+docker run --rm pallet_detection:cpu python3 /app/pallet_inference_node.py --ros-args -p use_onnx:=true
 ```
+
+Note: The CPU version will be significantly slower for inference than the GPU version, but it provides compatibility across all systems without requiring NVIDIA drivers.
 
 ## Troubleshooting 
 
