@@ -1,0 +1,32 @@
+# Exclude specific folders and files
+Augment_annotated/
+internship_assignment_sample_bag/
+runs/
+bag_image.png
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+ENV/
+
+# ROS specific
+ros2_pallet_ws/build/
+ros2_pallet_ws/install/
+ros2_pallet_ws/log/
+
+# Segmentation and detection output folders
+seg_save/
+res_img/
+
+# OS specific files
+.DS_Store
+Thumbs.db 
