@@ -57,13 +57,13 @@ def optimize_onnx_model(onnx_model_path, output_dir, quantize=True):
 def main():
     parser = argparse.ArgumentParser(description='ONNX Model Optimization')
     parser.add_argument('--detection_model', type=str, 
-                       default=os.path.join("runs", "detect", "train", "weights", "best.pt"),
+                       default=os.path.join("trained_models", "unoptimized", "detect", "best.pt"),
                        help='Path to the detection model')
     parser.add_argument('--segmentation_model', type=str, 
-                       default=os.path.join("runs", "segment", "train", "weights", "best.pt"),
+                       default=os.path.join("trained_models", "unoptimized", "segment", "best.pt"),
                        help='Path to the segmentation model')
     parser.add_argument('--output_dir', type=str, 
-                       default="optimized_models",
+                       default="trained_models/optimized",
                        help='Directory to save optimized models')
     parser.add_argument('--quantize', action='store_true',
                        help='Apply quantization to the model')

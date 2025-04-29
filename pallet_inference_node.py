@@ -44,11 +44,11 @@ class PalletInferenceNode(Node):
         super().__init__('pallet_inference_node')
         
         # Parameters (can be made configurable later)
-        self.declare_parameter('detection_model_path', 'runs/detect/train/weights/best.pt')
-        self.declare_parameter('segmentation_model_path', 'runs/segment/train/weights/best.pt')
+        self.declare_parameter('detection_model_path', 'trained_models/unoptimized/detect/best.pt')
+        self.declare_parameter('segmentation_model_path', 'trained_models/unoptimized/segment/best.pt')
         self.declare_parameter('use_onnx', False)
-        self.declare_parameter('onnx_detection_model_path', 'optimized_models/detection_quantized.onnx')
-        self.declare_parameter('onnx_segmentation_model_path', 'optimized_models/segmentation_quantized.onnx')
+        self.declare_parameter('onnx_detection_model_path', 'trained_models/optimized/best_detect_fp16.onnx')
+        self.declare_parameter('onnx_segmentation_model_path', 'trained_models/optimized/best_segment_fp16.onnx')
         self.declare_parameter('confidence_threshold', 0.5)
         # Lower segmentation threshold for better ground detection
         self.declare_parameter('segmentation_confidence_threshold', 0.35)

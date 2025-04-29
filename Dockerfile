@@ -40,8 +40,7 @@ WORKDIR /app
 
 # Copy only the required files
 COPY pallet_inference_node.py /app/
-COPY optimized_models/ /app/optimized_models/
-COPY runs/ /app/runs/
+COPY trained_models/ /app/trained_models/
 
 # Make Python script executable
 RUN chmod +x /app/pallet_inference_node.py
@@ -50,8 +49,26 @@ RUN chmod +x /app/pallet_inference_node.py
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set environment variable to use ONNX files by default
-ENV USE_ONNX=true
+# Create a wrapper script to ask for model type
+RUN echo '#!/bin/bash\n\
+echo "Select model type to run:"\n\
+echo "1) Unoptimized PyTorch models (default)"\n\
+echo "2) Optimized ONNX models"\n\
+read -p "Enter choice [1-2] (default: 1): " choice\n\
+\n\
+if [ "$choice" = "2" ]; then\n\
+    echo "Starting with optimized ONNX models..."\n\
+    python3 /app/pallet_inference_node.py --ros-args -p use_onnx:=true -p onnx_detection_model_path:=/app/trained_models/optimized/best_detect_fp16.onnx -p onnx_segmentation_model_path:=/app/trained_models/optimized/best_segment_fp16.onnx\n\
+else\n\
+    echo "Starting with unoptimized PyTorch models..."\n\
+    python3 /app/pallet_inference_node.py\n\
+fi\n\
+' > /app/run_models.sh
+
+RUN chmod +x /app/run_models.sh
+
+# By default, use unoptimized PyTorch models
+ENV USE_ONNX=false
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python3", "/app/pallet_inference_node.py", "--ros-args", "-p", "use_onnx:=true", "-p", "onnx_detection_model_path:=/app/optimized_models/best_detect_fp16.onnx", "-p", "onnx_segmentation_model_path:=/app/optimized_models/best_segment_fp16.onnx"] 
+CMD ["/app/run_models.sh"] 
