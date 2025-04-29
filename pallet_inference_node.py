@@ -46,6 +46,9 @@ class PalletInferenceNode(Node):
         # Parameters (can be made configurable later)
         self.declare_parameter('detection_model_path', 'runs/detect/train/weights/best.pt')
         self.declare_parameter('segmentation_model_path', 'runs/segment/train/weights/best.pt')
+        self.declare_parameter('use_onnx', False)
+        self.declare_parameter('onnx_detection_model_path', 'optimized_models/detection_quantized.onnx')
+        self.declare_parameter('onnx_segmentation_model_path', 'optimized_models/segmentation_quantized.onnx')
         self.declare_parameter('confidence_threshold', 0.5)
         # Lower segmentation threshold for better ground detection
         self.declare_parameter('segmentation_confidence_threshold', 0.35)
@@ -56,6 +59,9 @@ class PalletInferenceNode(Node):
         # Get parameters
         detection_model_path = self.get_parameter('detection_model_path').value
         segmentation_model_path = self.get_parameter('segmentation_model_path').value
+        use_onnx = self.get_parameter('use_onnx').value
+        onnx_detection_model_path = self.get_parameter('onnx_detection_model_path').value
+        onnx_segmentation_model_path = self.get_parameter('onnx_segmentation_model_path').value
         self.confidence_threshold = self.get_parameter('confidence_threshold').value
         self.segmentation_confidence_threshold = self.get_parameter('segmentation_confidence_threshold').value
         input_image_topic = self.get_parameter('input_image_topic').value
@@ -63,11 +69,28 @@ class PalletInferenceNode(Node):
         output_segmentation_topic = self.get_parameter('output_segmentation_topic').value
         
         # Initialize YOLO models
-        self.get_logger().info(f"Loading detection model from: {detection_model_path}")
-        self.detection_model = YOLO(detection_model_path)
-        
-        self.get_logger().info(f"Loading segmentation model from: {segmentation_model_path}")
-        self.segmentation_model = YOLO(segmentation_model_path)
+        if use_onnx:
+            if os.path.exists(onnx_detection_model_path):
+                self.get_logger().info(f"Loading optimized ONNX detection model from: {onnx_detection_model_path}")
+                self.detection_model = YOLO(onnx_detection_model_path)
+            else:
+                self.get_logger().warn(f"ONNX detection model not found at {onnx_detection_model_path}, falling back to PyTorch model")
+                self.get_logger().info(f"Loading detection model from: {detection_model_path}")
+                self.detection_model = YOLO(detection_model_path)
+            
+            if os.path.exists(onnx_segmentation_model_path):
+                self.get_logger().info(f"Loading optimized ONNX segmentation model from: {onnx_segmentation_model_path}")
+                self.segmentation_model = YOLO(onnx_segmentation_model_path)
+            else:
+                self.get_logger().warn(f"ONNX segmentation model not found at {onnx_segmentation_model_path}, falling back to PyTorch model")
+                self.get_logger().info(f"Loading segmentation model from: {segmentation_model_path}")
+                self.segmentation_model = YOLO(segmentation_model_path)
+        else:
+            self.get_logger().info(f"Loading detection model from: {detection_model_path}")
+            self.detection_model = YOLO(detection_model_path)
+            
+            self.get_logger().info(f"Loading segmentation model from: {segmentation_model_path}")
+            self.segmentation_model = YOLO(segmentation_model_path)
         
         # Initialize the CV bridge
         self.bridge = CvBridge()

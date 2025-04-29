@@ -30,3 +30,5 @@ res_img/
 # OS specific files
 .DS_Store
 Thumbs.db 
+
+optimized_models/

@@ -1,0 +1,57 @@
+FROM ros:humble-perception
+
+# Use NVIDIA runtime
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    git \
+    libopencv-dev \
+    python3-opencv \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Fix NumPy version to avoid compatibility issues with ROS/CV Bridge
+# Must be installed before other packages that might pull in newer numpy
+RUN pip3 install --no-cache-dir 'numpy==1.24.3'
+
+# Install PyTorch with CUDA support
+RUN pip3 install --no-cache-dir torch==2.0.1+cu118 torchvision==0.15.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+
+# Install Ultralytics YOLO
+RUN pip3 install --no-cache-dir ultralytics>=8.0.0
+
+# Install ONNX runtime with GPU support
+RUN pip3 install --no-cache-dir onnx>=1.14.0 onnxruntime-gpu>=1.16.0 onnx-simplifier>=0.4.35
+
+# Install ROS2 Python dependencies
+RUN pip3 install --no-cache-dir opencv-python>=4.7.0 pyyaml>=6.0 matplotlib>=3.7.0 pillow>=9.4.0 tqdm>=4.65.0
+
+# Verify numpy version and reinstall to force the correct version if needed
+RUN pip3 uninstall -y numpy && pip3 install --no-cache-dir 'numpy==1.24.3'
+
+# Create app directory
+WORKDIR /app
+
+# Copy only the required files
+COPY pallet_inference_node.py /app/
+COPY optimized_models/ /app/optimized_models/
+COPY runs/ /app/runs/
+
+# Make Python script executable
+RUN chmod +x /app/pallet_inference_node.py
+
+# Setup entrypoint
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set environment variable to use ONNX files by default
+ENV USE_ONNX=true
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python3", "/app/pallet_inference_node.py", "--ros-args", "-p", "use_onnx:=true", "-p", "onnx_detection_model_path:=/app/optimized_models/best_detect_fp16.onnx", "-p", "onnx_segmentation_model_path:=/app/optimized_models/best_segment_fp16.onnx"] 

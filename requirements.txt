@@ -5,7 +5,7 @@ torchvision>=0.15.0
 
 # Computer vision
 opencv-python>=4.7.0
-numpy==1.24.0
+numpy>=1.24.0,<1.25.0
 
 # Utilities
 pyyaml>=6.0
@@ -15,6 +15,12 @@ pillow>=9.4.0
 # For the CLI tool
 argparse>=1.4.0
 
-# Optional dependencies for training models
-# tqdm>=4.65.0
-# tensorboard>=2.12.0 
+# Model Optimization
+onnx>=1.14.0
+onnxruntime-gpu>=1.16.0
+onnx-simplifier>=0.4.35
+
+# ROS2 Dependencies are installed separately in the Dockerfile
+
+# For testing the models outside of ROS environment
+tqdm>=4.65.0 
