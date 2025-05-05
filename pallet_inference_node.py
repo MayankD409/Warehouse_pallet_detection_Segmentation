@@ -49,9 +49,9 @@ class PalletInferenceNode(Node):
         self.declare_parameter('use_onnx', False)
         self.declare_parameter('onnx_detection_model_path', 'trained_models/optimized/best_detect_fp16.onnx')
         self.declare_parameter('onnx_segmentation_model_path', 'trained_models/optimized/best_segment_fp16.onnx')
-        self.declare_parameter('confidence_threshold', 0.5)
+        self.declare_parameter('confidence_threshold', 0.4)
         # Lower segmentation threshold for better ground detection
-        self.declare_parameter('segmentation_confidence_threshold', 0.35)
+        self.declare_parameter('segmentation_confidence_threshold', 0.25)
         self.declare_parameter('input_image_topic', '/robot1/zed2i/left/image_rect_color')
         self.declare_parameter('output_detection_topic', '/pallet_detection')
         self.declare_parameter('output_segmentation_topic', '/ground_segmentation')
@@ -233,7 +233,7 @@ class PalletInferenceNode(Node):
                     # Convert the mask to a format usable by OpenCV
                     mask_data = mask.cpu().numpy()
                     mask_data = cv2.resize(mask_data, (image.shape[1], image.shape[0]))
-                    mask_bool = mask_data > 0.35  # Use lower threshold for mask
+                    mask_bool = mask_data > 0.25  # Use lower threshold for mask
                     
                     # Apply a semi-transparent overlay with color based on class
                     if class_id == GROUND_CLASS_ID:
